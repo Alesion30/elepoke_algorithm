@@ -5,7 +5,7 @@ class SuperElepoke(Elepoke):
     def __init__(self, datas=pd.read_csv("./data/pokemon.csv", index_col=0)):
         super().__init__(datas)
 
-    def calc(self) -> list:
+    def _calc(self) -> list:
         """アルゴリズムのテンプレート
 
         Returns:

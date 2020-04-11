@@ -1,5 +1,6 @@
 # %%
 from elepoke import *
+from math import floor
 
 
 class SuperElepoke(Elepoke):
@@ -224,7 +225,7 @@ class SuperElepoke(Elepoke):
 
         return [average1, average2]
 
-    def calc(self) -> list:
+    def _calc(self) -> list:
         """アルゴリズムのテンプレート
 
         Returns:
@@ -238,6 +239,55 @@ class SuperElepoke(Elepoke):
         opPokeList = []
 
         # ここに計算処理を記述する
+
+        # ポケモンの数をカウント
+        mypoke_count = 0
+        oppoke_count = 0
+        for poke in self.pokemon[0]:
+            if poke:
+                mypoke_count += 1
+        for poke in self.pokemon[1]:
+            if poke:
+                oppoke_count += 1
+
+        # ダメージをセット
+        op_dm_list = [0, 0, 0, 0, 0, 0]
+        for my_index, mypoke in enumerate(self.pokemon[0]):
+            my_dm = 0
+            for op_index, oppoke in enumerate(self.pokemon[1]):
+                if mypoke and oppoke:
+                    results = self._winRate([mypoke, oppoke])
+                else:
+                    results = [0, 0]
+                my_dm += results[0]
+                op_dm_list[op_index] += results[1]
+            my_average = floor(my_dm / oppoke_count)
+            poke = {"index": my_index, "name": mypoke,
+                    "Evaluation": my_average}
+            myPokeList.append(poke)
+
+        for op_index, oppoke in enumerate(self.pokemon[1]):
+            op_average = floor(op_dm_list[op_index] / mypoke_count)
+            poke = {"index": op_index, "name": oppoke,
+                    "Evaluation": op_average}
+            opPokeList.append(poke)
+
+        # 順位の設定
+        myPokeList.sort(key=lambda x: x['Evaluation'], reverse=True)
+        for index, mypoke in enumerate(myPokeList):
+            if mypoke["name"]:
+                mypoke['rank'] = index + 1
+            else:
+                mypoke['rank'] = 0
+        myPokeList.sort(key=lambda x: x['index'])
+
+        opPokeList.sort(key=lambda x: x['Evaluation'], reverse=True)
+        for index, oppoke in enumerate(opPokeList):
+            if oppoke["name"]:
+                oppoke['rank'] = index + 1
+            else:
+                oppoke['rank'] = 0
+        opPokeList.sort(key=lambda x: x['index'])
 
         # 結果をセット
         self.result = [myPokeList, opPokeList]
@@ -253,6 +303,30 @@ SuperElepoke()._winRate(["ルカリオ", "クレセリア"], show=True)
 print("iter: 10", SuperElepoke()._winRate(["ルカリオ", "ルカリオ"], iteration=10))
 print("iter: 100", SuperElepoke()._winRate(["ルカリオ", "ルカリオ"], iteration=100))
 print("iter: 1000", SuperElepoke()._winRate(["ルカリオ", "ルカリオ"], iteration=1000))
+
+
+# %%
+mypokeList = ["ヒートロトム", "アイアント", "ローブシン", "ゴリランダー", "バイウールー", "トゲキッス"]
+oppokeList = ["タチフサグマ", "ワタシラガ", "ウォッシュロトム", "アイアント", "ドリュウズ", "リザードン"]
+
+# Elepokeモデルを初期化
+el = SuperElepoke()
+# el = Elepoke()
+
+# セット
+el.append(name=[mypokeList, oppokeList], reset=True)
+
+# 計算
+el.fit()
+
+# 結果
+for item in el.result[0]:
+    print(item)
+
+print("")
+
+for item in el.result[1]:
+    print(item)
 
 
 # %%
